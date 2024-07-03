@@ -135,13 +135,19 @@ function createConnectionDots(rect, paper, group) {
 function updateConnectionDots(group) {
     for(let i = 0; i < group.length; i++){
         if (group[i].type === 'circle'){
-            const startX = group[i].attrs.cx;
-            const startY = group[i].attrs.cy;
-            var cnn = connections.find(c => c.from === group[i]);
-            if(cnn){
-                const endX = cnn.line.attrs.path[1][1];
-                const endY = cnn.line.attrs.path[1][2];
-                cnn.line.attr({ path: `M${startX},${startY}L${endX},${endY}` })
+            const dotX = group[i].attrs.cx;
+            const dotY = group[i].attrs.cy;
+            var cnnOut = connections.find(c => c.from === group[i]);
+            if(cnnOut){
+                const endX = cnnOut.line.attrs.path[1][1];
+                const endY = cnnOut.line.attrs.path[1][2];
+                cnnOut.line.attr({ path: `M${dotX},${dotY}L${endX},${endY}` })
+            }
+            var cnnIn = connections.find(c => c.to === group[i]);
+            if(cnnIn){
+                const startX = cnnIn.line.attrs.path[0][1];
+                const startY = cnnIn.line.attrs.path[0][2];
+                cnnIn.line.attr({ path: `M${startX},${startY}L${dotX},${dotY}` })
             }
         }
     }
