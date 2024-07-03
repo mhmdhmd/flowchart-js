@@ -1,11 +1,12 @@
 const rectangles = [];
+const connections = [];
 
 function addRectangle(paper) {
     x = randomNumber();
     y = randomNumber();
     const rectLabel = document.getElementById('rect-text').value;
-    const rectHeight = document.getElementById('rect-height').value;
-    const rectWidth = document.getElementById('rect-width').value;
+    const rectHeight = parseInt(document.getElementById('rect-height').value);
+    const rectWidth = parseInt(document.getElementById('rect-width').value);
     const rectColor = document.getElementById('rect-color').value;
 
     var groupRect = createDraggableRectWithText(x, y, rectWidth, rectHeight, rectLabel, rectColor, paper);
@@ -44,6 +45,11 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     // Add rectangle and text to the group
     group.push(rect, text);
 
+    // add dots on rectangle
+    dots = createConnectionDots(rect, paper);
+
+    dots.forEach(dot => group.push(dot));
+
     // Initialize drag variables
     var startTransform, startDragX, startDragY;
 
@@ -72,11 +78,49 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     // Enable dragging for the group
     group.drag(moveDrag, startDrag, endDrag);
 
-    var dbclick = function() {
-        console.log("db click");
+
+    var hoverIn = function(){
+        group.forEach(item => {
+            if(item.type === "circle")
+                item.attr({opacity: 1});
+        });
     }
 
-    group.dblclick(dbclick);
+    var hoverOut = function(){
+        group.forEach(item => {
+            if(item.type === "circle")
+                item.attr({opacity: 0});
+        });
+    }
+
+    group.hover(hoverIn, hoverOut);
 
     return group;
+}
+
+function createConnectionDots(rect, paper){
+    var dotRadius = 4;
+    var dotAttrs = {
+        fill: "#00f",
+        cursor: "pointer",
+        opacity: 0
+    };
+
+    const ra = rect.attrs;
+
+    var dots = [
+        paper.circle(ra.x + ra.width/2, ra.y, dotRadius).attr(dotAttrs),
+        paper.circle(ra.x + ra.width, ra.y + ra.height/2 , dotRadius).attr(dotAttrs),
+        paper.circle(ra.x + ra.width/2, ra.y + ra.height, dotRadius).attr(dotAttrs),
+        paper.circle(ra.x, ra.y + ra.height/2, dotRadius).attr(dotAttrs)
+    ];
+
+    dots.forEach(dot => {
+        dot.hover(
+            function() {this.attr({r: 6})},
+            function() {this.attr({r: 4})},
+        )
+    })
+
+    return dots;
 }
