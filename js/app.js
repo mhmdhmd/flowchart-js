@@ -46,20 +46,21 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     group.push(rect, text);
 
     // add dots on rectangle
-    dots = createConnectionDots(rect, paper);
+    var dots = createConnectionDots(rect, paper);
 
     dots.forEach(dot => group.push(dot));
 
     // Initialize drag variables
-    var startTransform, startDragX, startDragY;
+    var startTransform, startX, startY;
 
     // Function to handle dragging start
-    var startDrag = function () {
-        // Store initial transformation and drag start position
-        startTransform = this.transform();
-        startDragX = this.getBBox().x;
-        startDragY = this.getBBox().y;
-        this.attr({ opacity: 0.5 });
+    var startDrag = function (x, y) {
+        
+        startX = group.getBBox().x;
+        startY = group.getBBox().y;
+
+        // startTransform = this.transform();
+        group.attr({ opacity: 0.5 });
 
         // Bring the group to the front
         group.toFront();
@@ -67,16 +68,26 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
 
     // Function to handle dragging movement
     var moveDrag = function (dx, dy) {
-        group.transform(startTransform + "T" + dx + "," + dy);
+        //group.transform(startTransform + "T" + dx + "," + dy);
+        group.forEach(item => {
+            item.attr({x: startX + dx});
+            item.attr({y: startY + dy});
+        });
+
+        startX = group.getBBox().x;
+        startY = group.getBBox().y;
     };
 
     // Function to handle dragging end
     var endDrag = function () {
-        this.attr({ opacity: 1 });
+        group.attr({ opacity: 1 });
     };
 
     // Enable dragging for the group
-    group.drag(moveDrag, startDrag, endDrag);
+    //group.drag(moveDrag, startDrag, endDrag);
+    rect.drag(moveDrag, startDrag, endDrag);
+    text.drag(moveDrag, startDrag, endDrag);
+
 
 
     var hoverIn = function(){
@@ -119,8 +130,52 @@ function createConnectionDots(rect, paper){
         dot.hover(
             function() {this.attr({r: 6})},
             function() {this.attr({r: 4})},
-        )
-    })
+        );
+
+        dot.node.addEventListener('mousedown', function(event) {
+            console.log(event.x, event.y);
+            event.stopPropagation();
+        });
+
+        dot.drag(onDotMove, onDotStart, onDotEnd);
+    });
 
     return dots;
+}
+
+function onDotStart(dx, dy){
+    this.data("start", {x: this.attrs.cx, y: this.attrs.cy});
+}
+
+function onDotMove(dx, dy){
+    var start = this.data("start");
+    var newX = start.x + dx;
+    var newY = start.y + dy;
+
+    if(!this.data("line")){
+        var line = this.paper.path(`M${start.x},${start.y}L${newX},${newY}`);
+        line.attr({ stroke: "#000", "stroke-width": 2, "arrow-end": "classic-wide-long" });
+        this.data("line", line);
+    } else {
+        this.data("line").attr({ path: `M${start.x},${start.y}L${newX},${newY}` });
+    }
+}
+
+function onDotEnd(){
+    // var line = this.data("line");
+    // if(line){
+    //     var dot2 = getDotAt(this.attr("cx"), this.attr("cy"));
+    // }
+}
+
+function getDotAt(x, y){
+    rectangles.forEach(rect => {
+        rect.forEach(item => {
+            if(item.type === 'circle'){
+                var box = item.getBBox();
+                if(x > box.x && x < box.x2 && y > box.y && y < box.y2)
+                    return item;
+            }
+        })
+    })
 }
