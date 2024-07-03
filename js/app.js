@@ -51,12 +51,16 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     dots.forEach(dot => group.push(dot));
 
     // Initialize drag variables
-    var startTransform;
+    //var startTransform;
+    var startX, startY;
 
     // Function to handle dragging start
     var startDrag = function () {
+        var bbox = group.getBBox();
+        startX = bbox.x;
+        startY = bbox.y;
         // Store initial transformation and drag start position
-        startTransform = this.transform();
+        //startTransform = this.transform();
         group.attr({ opacity: 0.5 });
 
         // Bring the group to the front
@@ -67,13 +71,10 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     var moveDrag = function (newX, newY) {
         //group.transform(startTransform + "T" + dx + "," + dy);
 
-        var bbox = group.getBBox();
-        // Calculate the offsets
-        var dx = newX - bbox.x;
-        var dy = newY - bbox.y;
-        // Move each element in the set by adjusting their attributes
+        var deltaX = startX + dx;
+        var deltaY = startY + dy;
+
         group.forEach(function (el) {
-            // Update element position based on type
             if (el.type === "circle") {
                 el.attr({ cx: el.attrs.cx + dx, cy: el.attrs.cy + dy });
             } else if (el.type === "rect" || el.type === "image") {
