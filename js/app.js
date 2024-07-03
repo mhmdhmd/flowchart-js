@@ -46,21 +46,18 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     group.push(rect, text);
 
     // add dots on rectangle
-    var dots = createConnectionDots(rect, paper);
+    var dots = createConnectionDots(rect, paper, group);
 
     dots.forEach(dot => group.push(dot));
 
     // Initialize drag variables
-    //var startTransform;
-
     var pdx, pdy;
 
     // Function to handle dragging start
-    var startDrag = function (x, y) {
+    var startDrag = function () {
         pdx = 0;
         pdy = 0;
 
-        //startTransform = this.transform();
         group.attr({ opacity: 0.5 });
 
         // Bring the group to the front
@@ -69,7 +66,6 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
 
     // Function to handle dragging movement
     var moveDrag = function (dx, dy) {
-        //group.transform(startTransform + "T" + dx + "," + dy);
         var newDx = dx - pdx;
         var newDy = dy - pdy;
 
@@ -93,7 +89,6 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     };
 
     // Enable dragging for the group
-    //group.drag(moveDrag, startDrag, endDrag);
     rect.drag(moveDrag, startDrag, endDrag);
     text.drag(moveDrag, startDrag, endDrag);
 
@@ -118,7 +113,7 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     return group;
 }
 
-function createConnectionDots(rect, paper) {
+function createConnectionDots(rect, paper, group) {
     var dotRadius = 4;
     var dotAttrs = {
         fill: "#00f",
@@ -147,6 +142,7 @@ function createConnectionDots(rect, paper) {
         });
 
         dot.drag(onDotMove, onDotStart, onDotEnd);
+        dot.data("group", group);
     });
 
     return dots;
@@ -171,20 +167,35 @@ function onDotMove(dx, dy) {
 }
 
 function onDotEnd() {
-    // var line = this.data("line");
-    // if(line){
-    //     var dot2 = getDotAt(this.attr("cx"), this.attr("cy"));
-    // }
+    var line = this.data("line");
+    const x = line.attrs.path[1][1];
+    const y = line.attrs.path[1][2];
+    if (line) {
+        var dot2 = getDotAt(x, y, this.data('group'));
+        if (dot2) {
+            connections.push({ from: this, to: dot2, line: line });
+        } else {
+            line.remove();
+        }
+        this.removeData("line");
+    }
 }
 
-function getDotAt(x, y) {
-    rectangles.forEach(rect => {
-        rect.forEach(item => {
-            if (item.type === 'circle') {
-                var box = item.getBBox();
-                if (x > box.x && x < box.x2 && y > box.y && y < box.y2)
-                    return item;
+function getDotAt(x, y, group) {
+    for (let i = 0; i < rectangles.length; i++) {
+        const rectGroup = rectangles[i];
+        if (rectGroup !== group) {
+            for (let j = 0; j < rectGroup.length; j++) {
+                const el = rectGroup[j];
+                if (el.type === 'circle') {
+                    console.log(`mx: ${x}, my: ${y}, elx: ${el.attrs.cx}, ely: ${el.attrs.cy}`);
+                    var distance = Math.sqrt(Math.pow(x - el.attrs.cx, 2) + Math.pow(y - el.attrs.cy, 2));
+                    if (distance <= 6) {
+                        return el; // Return the circle element directly
+                    }
+                }
             }
-        })
-    })
+        }
+    }
+    return null; // Return null if no matching circle is found
 }
