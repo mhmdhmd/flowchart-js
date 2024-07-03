@@ -52,14 +52,14 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
 
     // Initialize drag variables
     //var startTransform;
-    var startX, startY;
+
+    var pdx, pdy;
 
     // Function to handle dragging start
-    var startDrag = function () {
-        var bbox = group.getBBox();
-        startX = bbox.x;
-        startY = bbox.y;
-        // Store initial transformation and drag start position
+    var startDrag = function (x, y) {
+        pdx = 0;
+        pdy = 0;
+
         //startTransform = this.transform();
         group.attr({ opacity: 0.5 });
 
@@ -68,23 +68,22 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     };
 
     // Function to handle dragging movement
-    var moveDrag = function (newX, newY) {
+    var moveDrag = function (dx, dy) {
         //group.transform(startTransform + "T" + dx + "," + dy);
-
-        var deltaX = startX + dx;
-        var deltaY = startY + dy;
+        var newDx = dx - pdx;
+        var newDy = dy - pdy;
 
         group.forEach(function (el) {
             if (el.type === "circle") {
-                el.attr({ cx: el.attrs.cx + dx, cy: el.attrs.cy + dy });
+                el.attr({ cx: el.attrs.cx + newDx, cy: el.attrs.cy + newDy });
             } else if (el.type === "rect" || el.type === "image") {
-                el.attr({ x: el.attrs.x + dx, y: el.attrs.y + dy });
+                el.attr({ x: el.attrs.x + newDx, y: el.attrs.y + newDy });
             } else if (el.type === "text") {
-                el.attr({ x: el.attrs.x + dx, y: el.attrs.y + dy });
-            } else if (el.type === "path") {
-                el.attr({ path: Raphael.transformPath(el.attrs.path, "t" + dx + "," + dy) });
+                el.attr({ x: el.attrs.x + newDx, y: el.attrs.y + newDy });
             }
         });
+
+        pdx = dx;
     };
 
     // Function to handle dragging end
