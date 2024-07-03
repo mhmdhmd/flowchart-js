@@ -137,7 +137,6 @@ function createConnectionDots(rect, paper, group) {
         );
 
         dot.node.addEventListener('mousedown', function (event) {
-            console.log(event.x, event.y);
             event.stopPropagation();
         });
 
@@ -150,6 +149,14 @@ function createConnectionDots(rect, paper, group) {
 
 function onDotStart(dx, dy) {
     this.data("start", { x: this.attrs.cx, y: this.attrs.cy });
+    for(let i=0; i < connections.length; i++){
+        if(connections[i].from === this){
+            connections[i].line.remove();
+            connections.splice(i, 1);
+        }
+    }
+
+    console.log(connections);
 }
 
 function onDotMove(dx, dy) {
@@ -188,7 +195,6 @@ function getDotAt(x, y, group) {
             for (let j = 0; j < rectGroup.length; j++) {
                 const el = rectGroup[j];
                 if (el.type === 'circle') {
-                    console.log(`mx: ${x}, my: ${y}, elx: ${el.attrs.cx}, ely: ${el.attrs.cy}`);
                     var distance = Math.sqrt(Math.pow(x - el.attrs.cx, 2) + Math.pow(y - el.attrs.cy, 2));
                     if (distance <= 6) {
                         return el; // Return the circle element directly
