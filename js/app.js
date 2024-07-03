@@ -1,29 +1,30 @@
 const rectangles = [];
 const connections = [];
 
+// Function to add a rectangle group to the paper
 function addRectangle(paper) {
-    x = randomNumber();
-    y = randomNumber();
+    const x = randomNumber();
+    const y = randomNumber();
     const rectLabel = document.getElementById('rect-text').value;
     const rectHeight = parseInt(document.getElementById('rect-height').value);
     const rectWidth = parseInt(document.getElementById('rect-width').value);
     const rectColor = document.getElementById('rect-color').value;
 
-    var groupRect = createDraggableRectWithText(x, y, rectWidth, rectHeight, rectLabel, rectColor, paper);
-
+    const groupRect = createDraggableRectWithText(x, y, rectWidth, rectHeight, rectLabel, rectColor, paper);
     rectangles.push(groupRect);
 }
 
+// Helper function to generate random number for positioning
 function randomNumber() {
     return Math.floor(Math.random() * 500) + 100;
 }
 
+// Function to create a draggable rectangle with text and connection dots
 function createDraggableRectWithText(x, y, width, height, labelText, color, paper) {
-    var group = paper.set();
+    const group = paper.set();
 
     // Create rectangle
-    var rect = paper.rect(x, y, width, height);
-    rect.attr({
+    const rect = paper.rect(x, y, width, height).attr({
         fill: color,
         stroke: "#000",
         "stroke-width": 2,
@@ -31,99 +32,84 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     });
 
     // Create text
-    var text = paper.text(x + width / 2, y + height / 2, labelText);
-    text.attr({
+    const text = paper.text(x + width / 2, y + height / 2, labelText).attr({
         "font-size": 20,
         "font-family": "Arial, sans-serif",
         fill: "#000",
         cursor: "move" // Set cursor to indicate draggable
-    });
-
-    // Center text
-    text.attr("text-anchor", "middle");
+    }).attr("text-anchor", "middle");
 
     // Add rectangle and text to the group
     group.push(rect, text);
 
-    // add dots on rectangle
-    var dots = createConnectionDots(rect, paper, group);
-
+    // Create connection dots
+    const dots = createConnectionDots(rect, paper, group);
     dots.forEach(dot => group.push(dot));
 
     // Initialize drag variables
-    var pdx, pdy;
+    let pdx, pdy;
 
     // Function to handle dragging start
-    var startDrag = function () {
+    const startDrag = function () {
         pdx = 0;
         pdy = 0;
-
-        group.attr({ opacity: 0.5 });
-
-        // Bring the group to the front
-        group.toFront();
+        group.attr({ opacity: 0.5 }).toFront(); // Set opacity and bring to front
     };
 
     // Function to handle dragging movement
-    var moveDrag = function (dx, dy) {
-        var newDx = dx - pdx;
-        var newDy = dy - pdy;
+    const moveDrag = function (dx, dy) {
+        const newDx = dx - pdx;
+        const newDy = dy - pdy;
 
-        group.forEach(function (el) {
-            if (el.type === "circle") {
-                el.attr({ cx: el.attrs.cx + newDx, cy: el.attrs.cy + newDy });
-            } else if (el.type === "rect" || el.type === "image") {
-                el.attr({ x: el.attrs.x + newDx, y: el.attrs.y + newDy });
-            } else if (el.type === "text") {
-                el.attr({ x: el.attrs.x + newDx, y: el.attrs.y + newDy });
+        group.forEach(el => {
+            switch (el.type) {
+                case "circle":
+                    el.attr({ cx: el.attrs.cx + newDx, cy: el.attrs.cy + newDy });
+                    break;
+                case "rect":
+                case "image":
+                case "text":
+                    el.attr({ x: el.attrs.x + newDx, y: el.attrs.y + newDy });
+                    break;
             }
         });
 
         pdx = dx;
         pdy = dy;
+
+        // Update connection dots positions
+        updateConnectionDots(group);
     };
 
     // Function to handle dragging end
-    var endDrag = function () {
-        group.attr({ opacity: 1 });
+    const endDrag = function () {
+        group.attr({ opacity: 1 }); // Restore opacity
     };
 
     // Enable dragging for the group
     rect.drag(moveDrag, startDrag, endDrag);
     text.drag(moveDrag, startDrag, endDrag);
 
-
-
-    var hoverIn = function () {
-        group.forEach(item => {
-            if (item.type === "circle")
-                item.attr({ opacity: 1 });
-        });
-    }
-
-    var hoverOut = function () {
-        group.forEach(item => {
-            if (item.type === "circle")
-                item.attr({ opacity: 0 });
-        });
-    }
-
-    group.hover(hoverIn, hoverOut);
+    // Hover effects for circles
+    group.hover(
+        () => group.forEach(item => { if (item.type === "circle") item.attr({ opacity: 1 }); }),
+        () => group.forEach(item => { if (item.type === "circle") item.attr({ opacity: 0 }); })
+    );
 
     return group;
 }
 
+// Function to create connection dots for a rectangle
 function createConnectionDots(rect, paper, group) {
-    var dotRadius = 4;
-    var dotAttrs = {
+    const dotRadius = 4;
+    const dotAttrs = {
         fill: "#00f",
         cursor: "pointer",
         opacity: 0
     };
 
     const ra = rect.attrs;
-
-    var dots = [
+    const dots = [
         paper.circle(ra.x + ra.width / 2, ra.y, dotRadius).attr(dotAttrs),
         paper.circle(ra.x + ra.width, ra.y + ra.height / 2, dotRadius).attr(dotAttrs),
         paper.circle(ra.x + ra.width / 2, ra.y + ra.height, dotRadius).attr(dotAttrs),
@@ -132,13 +118,11 @@ function createConnectionDots(rect, paper, group) {
 
     dots.forEach(dot => {
         dot.hover(
-            function () { this.attr({ r: 6 }) },
-            function () { this.attr({ r: 4 }) },
+            () => dot.attr({ r: 6 }),
+            () => dot.attr({ r: 4 })
         );
 
-        dot.node.addEventListener('mousedown', function (event) {
-            event.stopPropagation();
-        });
+        dot.node.addEventListener('mousedown', event => event.stopPropagation());
 
         dot.drag(onDotMove, onDotStart, onDotEnd);
         dot.data("group", group);
@@ -147,38 +131,58 @@ function createConnectionDots(rect, paper, group) {
     return dots;
 }
 
-function onDotStart(dx, dy) {
+// Function to update connection dots positions in a group
+function updateConnectionDots(group) {
+    for(let i = 0; i < group.length; i++){
+        if (group[i].type === 'circle'){
+            const startX = group[i].attrs.cx;
+            const startY = group[i].attrs.cy;
+            var cnn = connections.find(c => c.from === group[i]);
+            if(cnn){
+                const endX = cnn.line.attrs.path[1][1];
+                const endY = cnn.line.attrs.path[1][2];
+                cnn.line.attr({ path: `M${startX},${startY}L${endX},${endY}` })
+            }
+        }
+    }
+}
+
+// Function called when a connection dot starts dragging
+function onDotStart() {
     this.data("start", { x: this.attrs.cx, y: this.attrs.cy });
-    for(let i=0; i < connections.length; i++){
-        if(connections[i].from === this){
+    for (let i = 0; i < connections.length; i++) {
+        if (connections[i].from === this) {
             connections[i].line.remove();
             connections.splice(i, 1);
         }
     }
-
-    console.log(connections);
 }
 
+// Function called when a connection dot is being dragged
 function onDotMove(dx, dy) {
-    var start = this.data("start");
-    var newX = start.x + dx;
-    var newY = start.y + dy;
+    const start = this.data("start");
+    const newX = start.x + dx;
+    const newY = start.y + dy;
 
     if (!this.data("line")) {
-        var line = this.paper.path(`M${start.x},${start.y}L${newX},${newY}`);
-        line.attr({ stroke: "#000", "stroke-width": 2, "arrow-end": "classic-wide-long" });
+        const line = this.paper.path(`M${start.x},${start.y}L${newX},${newY}`).attr({
+            stroke: "#000",
+            "stroke-width": 2,
+            "arrow-end": "classic-wide-long"
+        });
         this.data("line", line);
     } else {
         this.data("line").attr({ path: `M${start.x},${start.y}L${newX},${newY}` });
     }
 }
 
+// Function called when a connection dot stops dragging
 function onDotEnd() {
-    var line = this.data("line");
-    const x = line.attrs.path[1][1];
-    const y = line.attrs.path[1][2];
+    const line = this.data("line");
     if (line) {
-        var dot2 = getDotAt(x, y, this.data('group'));
+        const x = line.attrs.path[1][1];
+        const y = line.attrs.path[1][2];
+        const dot2 = getDotAt(x, y, this.data('group'));
         if (dot2) {
             connections.push({ from: this, to: dot2, line: line });
         } else {
@@ -188,6 +192,7 @@ function onDotEnd() {
     }
 }
 
+// Function to get the connection dot at a specific position
 function getDotAt(x, y, group) {
     for (let i = 0; i < rectangles.length; i++) {
         const rectGroup = rectangles[i];
@@ -195,7 +200,7 @@ function getDotAt(x, y, group) {
             for (let j = 0; j < rectGroup.length; j++) {
                 const el = rectGroup[j];
                 if (el.type === 'circle') {
-                    var distance = Math.sqrt(Math.pow(x - el.attrs.cx, 2) + Math.pow(y - el.attrs.cy, 2));
+                    const distance = Math.sqrt(Math.pow(x - el.attrs.cx, 2) + Math.pow(y - el.attrs.cy, 2));
                     if (distance <= 6) {
                         return el; // Return the circle element directly
                     }
