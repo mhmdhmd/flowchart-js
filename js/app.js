@@ -84,6 +84,7 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
         });
 
         pdx = dx;
+        pdy = dy;
     };
 
     // Function to handle dragging end
