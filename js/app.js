@@ -24,7 +24,7 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     const group = paper.set();
 
     // Create rectangle
-    const rect = paper.rect(x, y, width, height).attr({
+    const rect = paper.rect(x, y, width, height, 5).attr({
         fill: color,
         stroke: "#000",
         "stroke-width": 2,
