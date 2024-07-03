@@ -51,15 +51,12 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     dots.forEach(dot => group.push(dot));
 
     // Initialize drag variables
-    var startTransform, startX, startY;
+    var startTransform;
 
     // Function to handle dragging start
-    var startDrag = function (x, y) {
-        
-        startX = group.getBBox().x;
-        startY = group.getBBox().y;
-
-        // startTransform = this.transform();
+    var startDrag = function () {
+        // Store initial transformation and drag start position
+        startTransform = this.transform();
         group.attr({ opacity: 0.5 });
 
         // Bring the group to the front
@@ -67,15 +64,26 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     };
 
     // Function to handle dragging movement
-    var moveDrag = function (dx, dy) {
+    var moveDrag = function (newX, newY) {
         //group.transform(startTransform + "T" + dx + "," + dy);
-        group.forEach(item => {
-            item.attr({x: startX + dx});
-            item.attr({y: startY + dy});
-        });
 
-        startX = group.getBBox().x;
-        startY = group.getBBox().y;
+        var bbox = group.getBBox();
+        // Calculate the offsets
+        var dx = newX - bbox.x;
+        var dy = newY - bbox.y;
+        // Move each element in the set by adjusting their attributes
+        group.forEach(function (el) {
+            // Update element position based on type
+            if (el.type === "circle") {
+                el.attr({ cx: el.attrs.cx + dx, cy: el.attrs.cy + dy });
+            } else if (el.type === "rect" || el.type === "image") {
+                el.attr({ x: el.attrs.x + dx, y: el.attrs.y + dy });
+            } else if (el.type === "text") {
+                el.attr({ x: el.attrs.x + dx, y: el.attrs.y + dy });
+            } else if (el.type === "path") {
+                el.attr({ path: Raphael.transformPath(el.attrs.path, "t" + dx + "," + dy) });
+            }
+        });
     };
 
     // Function to handle dragging end
@@ -90,17 +98,17 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
 
 
 
-    var hoverIn = function(){
+    var hoverIn = function () {
         group.forEach(item => {
-            if(item.type === "circle")
-                item.attr({opacity: 1});
+            if (item.type === "circle")
+                item.attr({ opacity: 1 });
         });
     }
 
-    var hoverOut = function(){
+    var hoverOut = function () {
         group.forEach(item => {
-            if(item.type === "circle")
-                item.attr({opacity: 0});
+            if (item.type === "circle")
+                item.attr({ opacity: 0 });
         });
     }
 
@@ -109,7 +117,7 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     return group;
 }
 
-function createConnectionDots(rect, paper){
+function createConnectionDots(rect, paper) {
     var dotRadius = 4;
     var dotAttrs = {
         fill: "#00f",
@@ -120,19 +128,19 @@ function createConnectionDots(rect, paper){
     const ra = rect.attrs;
 
     var dots = [
-        paper.circle(ra.x + ra.width/2, ra.y, dotRadius).attr(dotAttrs),
-        paper.circle(ra.x + ra.width, ra.y + ra.height/2 , dotRadius).attr(dotAttrs),
-        paper.circle(ra.x + ra.width/2, ra.y + ra.height, dotRadius).attr(dotAttrs),
-        paper.circle(ra.x, ra.y + ra.height/2, dotRadius).attr(dotAttrs)
+        paper.circle(ra.x + ra.width / 2, ra.y, dotRadius).attr(dotAttrs),
+        paper.circle(ra.x + ra.width, ra.y + ra.height / 2, dotRadius).attr(dotAttrs),
+        paper.circle(ra.x + ra.width / 2, ra.y + ra.height, dotRadius).attr(dotAttrs),
+        paper.circle(ra.x, ra.y + ra.height / 2, dotRadius).attr(dotAttrs)
     ];
 
     dots.forEach(dot => {
         dot.hover(
-            function() {this.attr({r: 6})},
-            function() {this.attr({r: 4})},
+            function () { this.attr({ r: 6 }) },
+            function () { this.attr({ r: 4 }) },
         );
 
-        dot.node.addEventListener('mousedown', function(event) {
+        dot.node.addEventListener('mousedown', function (event) {
             console.log(event.x, event.y);
             event.stopPropagation();
         });
@@ -143,16 +151,16 @@ function createConnectionDots(rect, paper){
     return dots;
 }
 
-function onDotStart(dx, dy){
-    this.data("start", {x: this.attrs.cx, y: this.attrs.cy});
+function onDotStart(dx, dy) {
+    this.data("start", { x: this.attrs.cx, y: this.attrs.cy });
 }
 
-function onDotMove(dx, dy){
+function onDotMove(dx, dy) {
     var start = this.data("start");
     var newX = start.x + dx;
     var newY = start.y + dy;
 
-    if(!this.data("line")){
+    if (!this.data("line")) {
         var line = this.paper.path(`M${start.x},${start.y}L${newX},${newY}`);
         line.attr({ stroke: "#000", "stroke-width": 2, "arrow-end": "classic-wide-long" });
         this.data("line", line);
@@ -161,19 +169,19 @@ function onDotMove(dx, dy){
     }
 }
 
-function onDotEnd(){
+function onDotEnd() {
     // var line = this.data("line");
     // if(line){
     //     var dot2 = getDotAt(this.attr("cx"), this.attr("cy"));
     // }
 }
 
-function getDotAt(x, y){
+function getDotAt(x, y) {
     rectangles.forEach(rect => {
         rect.forEach(item => {
-            if(item.type === 'circle'){
+            if (item.type === 'circle') {
                 var box = item.getBBox();
-                if(x > box.x && x < box.x2 && y > box.y && y < box.y2)
+                if (x > box.x && x < box.x2 && y > box.y && y < box.y2)
                     return item;
             }
         })
