@@ -39,8 +39,21 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
         cursor: "move" // Set cursor to indicate draggable
     }).attr("text-anchor", "middle");
 
+    // Create trash icon
+    const trashIcon = paper.text(x + width - 12, y + 12, '\uf00d').attr({
+        "font-family": "FontAwesome",
+        "font-size": 18,
+        fill: "#000",
+        cursor: "pointer",
+        opacity: 0 // Hidden initially
+    }).data("group", group);
+
+    trashIcon.node.addEventListener('click', function () {
+        deleteGroup(trashIcon.data("group"));
+    });
+
     // Add rectangle and text to the group
-    group.push(rect, text);
+    group.push(rect, text, trashIcon);
 
     // Create connection dots
     const dots = createConnectionDots(rect, paper, group);
@@ -92,11 +105,39 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
 
     // Hover effects for circles
     group.hover(
-        () => group.forEach(item => { if (item.type === "circle") item.attr({ opacity: 1 }); }),
-        () => group.forEach(item => { if (item.type === "circle") item.attr({ opacity: 0 }); })
+        () => group.forEach(item => { 
+            if (item.type === "circle") item.attr({ opacity: 1 });
+            if (item.type === "text" && item.attrs["font-family"] === "FontAwesome") item.attr({ opacity: 1 });
+        }),
+        () => group.forEach(item => {
+            if (item.type === "circle") item.attr({ opacity: 0 });
+            if (item.type === "text" && item.attrs["font-family"] === "FontAwesome") item.attr({ opacity: 0 });
+        })
     );
 
     return group;
+}
+
+// Function to delete a group and its connections
+function deleteGroup(group) {
+    // Remove connections associated with the group
+    const indexes = [];
+    connections.forEach((conn, index) => {
+        if (conn.from.data("group") === group || conn.to.data("group") === group) {
+            conn.line.remove();
+            indexes.push(index);
+        }
+    });
+
+    indexes.sort((a, b) => b - a);
+    for (let i = 0; i < indexes.length; i++) {
+        connections.splice(indexes[i], 1);
+    }
+
+    // Remove the group from rectangles and the canvas
+    group.forEach(item => item.remove());
+    const index = rectangles.indexOf(group);
+    if (index !== -1) rectangles.splice(index, 1);
 }
 
 // Function to create connection dots for a rectangle
@@ -143,12 +184,12 @@ function updateConnectionDots(group) {
                 const endY = cnnOut.line.attrs.path[1][2];
                 cnnOut.line.attr({ path: `M${dotX},${dotY}L${endX},${endY}` })
             }
-            var cnnIn = connections.find(c => c.to === group[i]);
-            if(cnnIn){
+            var cnnIns = connections.filter(c => c.to === group[i]);
+            cnnIns.forEach(cnnIn => {
                 const startX = cnnIn.line.attrs.path[0][1];
                 const startY = cnnIn.line.attrs.path[0][2];
                 cnnIn.line.attr({ path: `M${startX},${startY}L${dotX},${dotY}` })
-            }
+            });
         }
     }
 }
