@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,19 +9,41 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <div id="toolbox">
         <h2>Toolbox</h2>
         <button class="m-b-5 parrent-box" id="add-rectangle-button">Add Rectangle</button>
-        <input class="m-b-5 parrent-box" id="rect-text" value="Label"/>
-        <input class="m-b-5 parrent-box" id="rect-height" value="50"/>
-        <input class="m-b-5 parrent-box" id="rect-width" value="100"/>
-        <input class="m-b-5 parrent-box" id="rect-color" value="#f7b"/>
+        <input class="m-b-5 parrent-box" id="rect-text" value="Label" />
+        <input class="m-b-5 parrent-box" id="rect-height" value="50" />
+        <input class="m-b-5 parrent-box" id="rect-width" value="100" />
+        <input class="m-b-5 parrent-box" id="rect-color" value="#f7b" />
     </div>
     <div id="canvas-container">
         <div id="canvas"></div>
     </div>
 
+    <div id="overlay" style="display: none;"></div>
+
+    <!-- Modal Structure -->
+    <div id="property-modal" style="display: none;">
+        <div>
+            <label for="prop1">Prop1:</label>
+            <input type="text" id="prop1">
+        </div>
+        <div>
+            <label for="prop2">Prop2:</label>
+            <input type="text" id="prop2">
+        </div>
+        <div>
+            <label for="prop3">Prop3:</label>
+            <input type="text" id="prop3">
+        </div>
+        <button id="save-properties">Save</button>
+        <button id="cancel-properties">Cancel</button>
+    </div>
+
     <script src="js/main.js"></script>
 </body>
+
 </html>

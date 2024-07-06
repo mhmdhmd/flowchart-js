@@ -231,12 +231,59 @@ function onDotEnd() {
         const y = line.attrs.path[1][2];
         const dot2 = getDotAt(x, y, this.data('group'));
         if (dot2) {
-            connections.push({ from: this, to: dot2, line: line });
+            //connections.push({ from: this, to: dot2, line: line });
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('property-modal').style.display = 'block';
+
+            // Save the connection temporarily to add properties later
+            const tempConnection = { from: this, to: dot2, line: line };
+            document.getElementById('save-properties').onclick = function() {
+                saveProperties(tempConnection);
+            };
+            document.getElementById('cancel-properties').onclick = function() {
+                cancelProperties(tempConnection);
+            };
         } else {
             line.remove();
         }
         this.removeData("line");
     }
+}
+
+// Function to save properties and add the connection to the connections array
+function saveProperties(connection) {
+    const prop1 = document.getElementById('prop1').value;
+    const prop2 = document.getElementById('prop2').value;
+    const prop3 = document.getElementById('prop3').value;
+
+    // Add properties to the connection
+    connection.data = { prop1, prop2, prop3 };
+
+    // Add the connection to the connections array
+    connections.push(connection);
+
+    // Hide the modal
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('property-modal').style.display = 'none';
+
+    // Clear the input fields
+    document.getElementById('prop1').value = '';
+    document.getElementById('prop2').value = '';
+    document.getElementById('prop3').value = '';
+}
+
+function cancelProperties(connection) {
+    // Remove the temporary line
+    connection.line.remove();
+
+    // Hide the modal
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('property-modal').style.display = 'none';
+
+    // Clear the input fields
+    document.getElementById('prop1').value = '';
+    document.getElementById('prop2').value = '';
+    document.getElementById('prop3').value = '';
 }
 
 // Function to get the connection dot at a specific position
