@@ -14,10 +14,6 @@
     <div id="toolbox">
         <h2>Toolbox</h2>
         <button class="m-b-5 parrent-box" id="add-rectangle-button">Add Rectangle</button>
-        <input class="m-b-5 parrent-box" id="rect-text" value="Label" />
-        <input class="m-b-5 parrent-box" id="rect-height" value="50" />
-        <input class="m-b-5 parrent-box" id="rect-width" value="100" />
-        <input class="m-b-5 parrent-box" id="rect-color" value="#f7b" />
     </div>
     <div id="canvas-container">
         <div id="canvas"></div>
@@ -29,18 +25,41 @@
     <div id="property-modal" style="display: none;">
         <div>
             <label for="prop1">Prop1:</label>
-            <input type="text" id="prop1">
+            <input class="m-b-5" type="text" id="prop1">
         </div>
         <div>
             <label for="prop2">Prop2:</label>
-            <input type="text" id="prop2">
+            <input class="m-b-5" type="text" id="prop2">
         </div>
         <div>
             <label for="prop3">Prop3:</label>
-            <input type="text" id="prop3">
+            <input class="m-b-5" type="text" id="prop3">
         </div>
         <button id="save-properties">Save</button>
         <button id="cancel-properties">Cancel</button>
+    </div>
+
+    <div id="group-modal" class="modal">
+        <div class="modal-content">
+            <div>
+                <label for="g-label">Label:</label>
+                <input class="m-b-5" type="text" id="g-label" value="label1">
+            </div>
+            <!-- <div>
+                <label for="g-height">Height:</label>
+                <input class="m-b-5" type="text" id="g-height" value="50">
+            </div>
+            <div>
+                <label for="g-width">Width:</label>
+                <input class="m-b-5" type="text" id="g-width" value="100">
+            </div> -->
+            <div>
+                <label for="g-color">Color:</label>
+                <input class="m-b-5" type="text" id="g-color" value="#f73">
+            </div><br><br>
+            <button id="save-group">Save</button>
+            <button id="cancel-group">Cancel</button>
+        </div>
     </div>
 
     <script src="js/main.js"></script>

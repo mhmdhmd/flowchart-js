@@ -5,23 +5,47 @@ const connections = [];
 function addRectangle(paper) {
     const x = randomNumber();
     const y = randomNumber();
-    const rectLabel = document.getElementById('rect-text').value;
-    const rectHeight = parseInt(document.getElementById('rect-height').value);
-    const rectWidth = parseInt(document.getElementById('rect-width').value);
-    const rectColor = document.getElementById('rect-color').value;
 
-    const groupRect = createDraggableRectWithText(x, y, rectWidth, rectHeight, rectLabel, rectColor, paper);
-    rectangles.push(groupRect);
-}
+    // const groupRect = createDraggableRectWithText(x, y, rectWidth, rectHeight, rectLabel, rectColor, paper);
+    // rectangles.push(groupRect);
 
-// Helper function to generate random number for positioning
-function randomNumber() {
-    return Math.floor(Math.random() * 500) + 100;
+    // Display the group modal
+    document.getElementById('group-modal').style.display = 'block';
+
+    // Handle save action
+    document.getElementById('save-group').onclick = function () {
+        const rectLabel = document.getElementById('g-label').value;
+        // const rectHeight = parseInt(document.getElementById('g-height').value);
+        const rectHeight = 80;
+        // const rectWidth = parseInt(document.getElementById('g-width').value);
+        const rectWidth = 170;
+        const rectColor = document.getElementById('g-color').value;
+
+        const groupRect = createDraggableRectWithText(x, y, rectWidth, rectHeight, rectLabel, rectColor, paper, { rectLabel, rectHeight, rectWidth, rectColor });
+        rectangles.push(groupRect);
+
+        // Close modal after adding rectangle
+        document.getElementById('group-modal').style.display = 'none';
+
+        // Clear the input fields
+        document.getElementById('g-label').value = '';
+        // document.getElementById('g-height').value = '';
+        // document.getElementById('g-width').value = '';
+        document.getElementById('g-color').value = '';
+    };
+
+    // Handle cancel action
+    document.getElementById('cancel-group').onclick = function () {
+        // Close modal without adding rectangle
+        document.getElementById('group-modal').style.display = 'none';
+    };
 }
 
 // Function to create a draggable rectangle with text and connection dots
-function createDraggableRectWithText(x, y, width, height, labelText, color, paper) {
+function createDraggableRectWithText(x, y, width, height, labelText, color, paper, data) {
     const group = paper.set();
+    //group.data("data", data);
+    group.data = data;
 
     // Create rectangle
     const rect = paper.rect(x, y, width, height, 5).attr({
@@ -52,8 +76,20 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
         deleteGroup(trashIcon.data("group"));
     });
 
+    const detailIcon = paper.text(x + 12, y + 12, '\uf0ca').attr({
+        "font-family": "FontAwesome",
+        "font-size": 15,
+        fill: "#000",
+        cursor: "pointer",
+        opacity: 0 // Hidden initially
+    }).data("group", group);
+
+    detailIcon.node.addEventListener('click', function () {
+        openEditModal(detailIcon.data("group"), rect, text);
+    });
+
     // Add rectangle and text to the group
-    group.push(rect, text, trashIcon);
+    group.push(rect, text, trashIcon, detailIcon);
 
     // Create connection dots
     const dots = createConnectionDots(rect, paper, group);
@@ -105,7 +141,7 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
 
     // Hover effects for circles
     group.hover(
-        () => group.forEach(item => { 
+        () => group.forEach(item => {
             if (item.type === "circle") item.attr({ opacity: 1 });
             if (item.type === "text" && item.attrs["font-family"] === "FontAwesome") item.attr({ opacity: 1 });
         }),
@@ -116,6 +152,11 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     );
 
     return group;
+}
+
+// Helper function to generate random number for positioning
+function randomNumber() {
+    return Math.floor(Math.random() * 500) + 100;
 }
 
 // Function to delete a group and its connections
@@ -138,6 +179,34 @@ function deleteGroup(group) {
     group.forEach(item => item.remove());
     const index = rectangles.indexOf(group);
     if (index !== -1) rectangles.splice(index, 1);
+}
+
+function openEditModal(group, rect, text) {
+
+    // Fill modal inputs with existing values
+    document.getElementById('g-label').value = group.data.rectLabel;
+    // document.getElementById('g-height').value = group.data.rectHeight;
+    // document.getElementById('g-width').value = group.data.rectWidth;
+    document.getElementById('g-color').value = group.data.rectColor;
+
+    // Show the modal
+    document.getElementById('group-modal').style.display = 'block';
+
+    // Update save button to update instead of adding new
+    document.getElementById('save-group').onclick = function () {
+        // Update properties with new values
+        group.data.rectLabel = document.getElementById('g-label').value;
+        text.attr('text', document.getElementById('g-label').value);
+        // group.data.rectHeight = parseInt(document.getElementById('g-height').value);
+        // rect.attr('height', parseInt(document.getElementById('g-height').value));
+        // group.data.rectWidth = parseInt(document.getElementById('g-width').value);
+        // rect.attr('width', parseInt(document.getElementById('g-width').value));
+        group.data.rectColor = document.getElementById('g-color').value;
+        rect.attr('fill', document.getElementById('g-color').value);
+
+        // Close modal after update
+        document.getElementById('group-modal').style.display = 'none';
+    };
 }
 
 // Function to create connection dots for a rectangle
@@ -174,12 +243,12 @@ function createConnectionDots(rect, paper, group) {
 
 // Function to update connection dots positions in a group
 function updateConnectionDots(group) {
-    for(let i = 0; i < group.length; i++){
-        if (group[i].type === 'circle'){
+    for (let i = 0; i < group.length; i++) {
+        if (group[i].type === 'circle') {
             const dotX = group[i].attrs.cx;
             const dotY = group[i].attrs.cy;
             var cnnOut = connections.find(c => c.from === group[i]);
-            if(cnnOut){
+            if (cnnOut) {
                 const endX = cnnOut.line.attrs.path[1][1];
                 const endY = cnnOut.line.attrs.path[1][2];
                 cnnOut.line.attr({ path: `M${dotX},${dotY}L${endX},${endY}` })
@@ -217,6 +286,12 @@ function onDotMove(dx, dy) {
             "stroke-width": 2,
             "arrow-end": "classic-wide-long"
         });
+
+        line.hover(
+            () => line.attr({ "stroke-width": 6 }),  // Increase stroke width on hover
+            () => line.attr({ "stroke-width": 2 })   // Restore stroke width
+        );
+
         this.data("line", line);
     } else {
         this.data("line").attr({ path: `M${start.x},${start.y}L${newX},${newY}` });
@@ -231,16 +306,24 @@ function onDotEnd() {
         const y = line.attrs.path[1][2];
         const dot2 = getDotAt(x, y, this.data('group'));
         if (dot2) {
+            // Add double-click event listener to the line
+            line.node.addEventListener('dblclick', () => {
+                const connection = connections.find(conn => conn.line === line);
+                if (connection) {
+                    editConnection(connection);
+                }
+            });
+
             //connections.push({ from: this, to: dot2, line: line });
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('property-modal').style.display = 'block';
 
             // Save the connection temporarily to add properties later
             const tempConnection = { from: this, to: dot2, line: line };
-            document.getElementById('save-properties').onclick = function() {
+            document.getElementById('save-properties').onclick = function () {
                 saveProperties(tempConnection);
             };
-            document.getElementById('cancel-properties').onclick = function() {
+            document.getElementById('cancel-properties').onclick = function () {
                 cancelProperties(tempConnection);
             };
         } else {
@@ -250,6 +333,28 @@ function onDotEnd() {
     }
 }
 
+// Function to edit properties of an existing connection
+function editConnection(connection) {
+    const { prop1, prop2, prop3 } = connection.data || {};
+
+    // Fill the modal inputs with the current properties
+    document.getElementById('prop1').value = prop1 || '';
+    document.getElementById('prop2').value = prop2 || '';
+    document.getElementById('prop3').value = prop3 || '';
+
+    // Show the overlay and modal
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('property-modal').style.display = 'block';
+
+    // Update the save button to save changes to this connection
+    document.getElementById('save-properties').onclick = function () {
+        saveProperties(connection);
+    };
+    document.getElementById('cancel-properties').onclick = function () {
+        cancelProperties();
+    };
+}
+
 // Function to save properties and add the connection to the connections array
 function saveProperties(connection) {
     const prop1 = document.getElementById('prop1').value;
@@ -257,12 +362,19 @@ function saveProperties(connection) {
     const prop3 = document.getElementById('prop3').value;
 
     // Add properties to the connection
-    connection.data = { prop1, prop2, prop3 };
+    if (!connection.data) {
+        connection.data = {};
+    }
+    connection.data.prop1 = prop1;
+    connection.data.prop2 = prop2;
+    connection.data.prop3 = prop3;
 
-    // Add the connection to the connections array
-    connections.push(connection);
+    // Add the connection to the connections array if it's not already there
+    if (!connections.includes(connection)) {
+        connections.push(connection);
+    }
 
-    // Hide the modal
+    // Hide the overlay and modal
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('property-modal').style.display = 'none';
 
@@ -273,10 +385,12 @@ function saveProperties(connection) {
 }
 
 function cancelProperties(connection) {
-    // Remove the temporary line
-    connection.line.remove();
+    if (connection && !connections.includes(connection)) {
+        // Remove the temporary line if it was not already saved
+        connection.line.remove();
+    }
 
-    // Hide the modal
+    // Hide the overlay and modal
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('property-modal').style.display = 'none';
 
