@@ -5,12 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raphaël.js Rectangle Draw and Connect</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="js/raphael.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/main.js"></script>
 </head>
 
 <body>
+    
     <div id="toolbox">
         <h2>Toolbox</h2>
         <button class="m-b-5 parrent-box" id="add-rectangle-button">Add Rectangle</button>
@@ -45,14 +47,6 @@
                 <label for="g-label">Label:</label>
                 <input class="m-b-5" type="text" id="g-label" value="label1">
             </div>
-            <!-- <div>
-                <label for="g-height">Height:</label>
-                <input class="m-b-5" type="text" id="g-height" value="50">
-            </div>
-            <div>
-                <label for="g-width">Width:</label>
-                <input class="m-b-5" type="text" id="g-width" value="100">
-            </div> -->
             <div>
                 <label for="g-color">Color:</label>
                 <input class="m-b-5" type="text" id="g-color" value="#f73">
@@ -61,8 +55,6 @@
             <button id="cancel-group">Cancel</button>
         </div>
     </div>
-
-    <script src="js/main.js"></script>
 </body>
 
 </html>

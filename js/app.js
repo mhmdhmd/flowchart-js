@@ -31,7 +31,7 @@ function addRectangle(paper) {
         document.getElementById('g-label').value = '';
         // document.getElementById('g-height').value = '';
         // document.getElementById('g-width').value = '';
-        document.getElementById('g-color').value = '';
+        document.getElementById('g-color').value = '#';
     };
 
     // Handle cancel action
@@ -65,24 +65,26 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
 
     // Create trash icon
     const trashIcon = paper.text(x + width - 12, y + 12, '\uf00d').attr({
-        "font-family": "FontAwesome",
+        "font-family": "\"Font Awesome 5 Free\"",
+        "font-weight": "900",
         "font-size": 18,
         fill: "#000",
         cursor: "pointer",
         opacity: 0 // Hidden initially
-    }).data("group", group);
+    }).data("group", group).data("type", "icon");
 
     trashIcon.node.addEventListener('click', function () {
         deleteGroup(trashIcon.data("group"));
     });
 
     const detailIcon = paper.text(x + 12, y + 12, '\uf0ca').attr({
-        "font-family": "FontAwesome",
+        "font-family": "\"Font Awesome 5 Free\"",
+        "font-weight": "900",
         "font-size": 15,
         fill: "#000",
         cursor: "pointer",
         opacity: 0 // Hidden initially
-    }).data("group", group);
+    }).data("group", group).data("type", "icon");
 
     detailIcon.node.addEventListener('click', function () {
         openEditModal(detailIcon.data("group"), rect, text);
@@ -143,11 +145,11 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     group.hover(
         () => group.forEach(item => {
             if (item.type === "circle") item.attr({ opacity: 1 });
-            if (item.type === "text" && item.attrs["font-family"] === "FontAwesome") item.attr({ opacity: 1 });
+            if (item.type === "text" && item.data("type") === "icon") item.attr({ opacity: 1 });
         }),
         () => group.forEach(item => {
             if (item.type === "circle") item.attr({ opacity: 0 });
-            if (item.type === "text" && item.attrs["font-family"] === "FontAwesome") item.attr({ opacity: 0 });
+            if (item.type === "text" && item.data("type") === "icon") item.attr({ opacity: 0 });
         })
     );
 
@@ -197,10 +199,6 @@ function openEditModal(group, rect, text) {
         // Update properties with new values
         group.data.rectLabel = document.getElementById('g-label').value;
         text.attr('text', document.getElementById('g-label').value);
-        // group.data.rectHeight = parseInt(document.getElementById('g-height').value);
-        // rect.attr('height', parseInt(document.getElementById('g-height').value));
-        // group.data.rectWidth = parseInt(document.getElementById('g-width').value);
-        // rect.attr('width', parseInt(document.getElementById('g-width').value));
         group.data.rectColor = document.getElementById('g-color').value;
         rect.attr('fill', document.getElementById('g-color').value);
 
