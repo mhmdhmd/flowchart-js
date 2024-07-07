@@ -1,36 +1,56 @@
 const rectangles = [];
 const connections = [];
 
+// Constants
+const RECT_HEIGHT = 80;
+const RECT_WIDTH = 170;
+const DOT_RADIUS = 4;
+const DOT_HOVER_RADIUS = 6;
+const MODAL_DISPLAY_BLOCK = 'block';
+const MODAL_DISPLAY_NONE = 'none';
+
+// Cache DOM elements
+const groupModal = document.getElementById('group-modal');
+const saveGroupBtn = document.getElementById('save-group');
+const cancelGroupBtn = document.getElementById('cancel-group');
+const gLabelInput = document.getElementById('g-label');
+const gColorInput = document.getElementById('g-color');
+const overlay = document.getElementById('overlay');
+const propertyModal = document.getElementById('property-modal');
+const savePropertiesBtn = document.getElementById('save-properties');
+const cancelPropertiesBtn = document.getElementById('cancel-properties');
+const prop1Input = document.getElementById('prop1');
+const prop2Input = document.getElementById('prop2');
+const prop3Input = document.getElementById('prop3');
+
 // Function to add a rectangle group to the paper
 function addRectangle(paper) {
     const x = randomNumber();
     const y = randomNumber();
 
     // Display the group modal
-    document.getElementById('group-modal').style.display = 'block';
+    groupModal.style.display = MODAL_DISPLAY_BLOCK;
 
     // Handle save action
-    document.getElementById('save-group').onclick = function () {
-        const rectLabel = document.getElementById('g-label').value;
-        const rectHeight = 80;
-        const rectWidth = 170;
-        const rectColor = document.getElementById('g-color').value;
+    saveGroupBtn.onclick = function () {
+        const rectLabel = gLabelInput.value;
+        const rectColor = gColorInput.value;
 
-        const groupRect = createDraggableRectWithText(x, y, rectWidth, rectHeight, rectLabel, rectColor, paper, { rectLabel, rectHeight, rectWidth, rectColor });
+        const groupRect = createDraggableRectWithText(x, y, RECT_WIDTH, RECT_HEIGHT, rectLabel, rectColor, paper, { rectLabel, rectHeight: RECT_HEIGHT, rectWidth: RECT_WIDTH, rectColor });
         rectangles.push(groupRect);
 
         // Close modal after adding rectangle
-        document.getElementById('group-modal').style.display = 'none';
+        groupModal.style.display = MODAL_DISPLAY_NONE;
 
         // Clear the input fields
-        document.getElementById('g-label').value = '';
-        document.getElementById('g-color').value = '#';
+        gLabelInput.value = '';
+        gColorInput.value = '#';
     };
 
     // Handle cancel action
-    document.getElementById('cancel-group').onclick = function () {
+    cancelGroupBtn.onclick = function () {
         // Close modal without adding rectangle
-        document.getElementById('group-modal').style.display = 'none';
+        groupModal.style.display = MODAL_DISPLAY_NONE;
     };
 }
 
@@ -56,31 +76,10 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     }).attr("text-anchor", "middle");
 
     // Create trash icon
-    const trashIcon = paper.text(x + width - 12, y + 12, '\uf00d').attr({
-        "font-family": "\"Font Awesome 5 Free\"",
-        "font-weight": "900",
-        "font-size": 18,
-        fill: "#000",
-        cursor: "pointer",
-        opacity: 0 // Hidden initially
-    }).data("group", group).data("type", "icon");
+    const trashIcon = createIcon(paper, x + width - 12, y + 12, '\uf00d', group, deleteGroup);
 
-    trashIcon.node.addEventListener('click', function () {
-        deleteGroup(trashIcon.data("group"));
-    });
-
-    const detailIcon = paper.text(x + 12, y + 12, '\uf0ca').attr({
-        "font-family": "\"Font Awesome 5 Free\"",
-        "font-weight": "900",
-        "font-size": 15,
-        fill: "#000",
-        cursor: "pointer",
-        opacity: 0 // Hidden initially
-    }).data("group", group).data("type", "icon");
-
-    detailIcon.node.addEventListener('click', function () {
-        openEditModal(detailIcon.data("group"), rect, text);
-    });
+    // Create detail icon
+    const detailIcon = createIcon(paper, x + 12, y + 12, '\uf0ca', group, () => openEditModal(group, rect, text));
 
     // Add rectangle and text to the group
     group.push(rect, text, trashIcon, detailIcon);
@@ -89,61 +88,11 @@ function createDraggableRectWithText(x, y, width, height, labelText, color, pape
     const dots = createConnectionDots(rect, paper, group);
     dots.forEach(dot => group.push(dot));
 
-    // Initialize drag variables
-    let pdx, pdy;
-
-    // Function to handle dragging start
-    const startDrag = function () {
-        pdx = 0;
-        pdy = 0;
-        group.attr({ opacity: 0.5 }).toFront(); // Set opacity and bring to front
-    };
-
-    // Function to handle dragging movement
-    const moveDrag = function (dx, dy) {
-        const newDx = dx - pdx;
-        const newDy = dy - pdy;
-
-        group.forEach(el => {
-            switch (el.type) {
-                case "circle":
-                    el.attr({ cx: el.attrs.cx + newDx, cy: el.attrs.cy + newDy });
-                    break;
-                case "rect":
-                case "image":
-                case "text":
-                    el.attr({ x: el.attrs.x + newDx, y: el.attrs.y + newDy });
-                    break;
-            }
-        });
-
-        pdx = dx;
-        pdy = dy;
-
-        // Update connection dots positions
-        updateConnectionDots(group);
-    };
-
-    // Function to handle dragging end
-    const endDrag = function () {
-        group.attr({ opacity: 1 }); // Restore opacity
-    };
-
     // Enable dragging for the group
-    rect.drag(moveDrag, startDrag, endDrag);
-    text.drag(moveDrag, startDrag, endDrag);
+    enableDragging(group, rect, text);
 
     // Hover effects for circles
-    group.hover(
-        () => group.forEach(item => {
-            if (item.type === "circle") item.attr({ opacity: 1 });
-            if (item.type === "text" && item.data("type") === "icon") item.attr({ opacity: 1 });
-        }),
-        () => group.forEach(item => {
-            if (item.type === "circle") item.attr({ opacity: 0 });
-            if (item.type === "text" && item.data("type") === "icon") item.attr({ opacity: 0 });
-        })
-    );
+    addHoverEffects(group);
 
     return group;
 }
@@ -176,30 +125,28 @@ function deleteGroup(group) {
 }
 
 function openEditModal(group, rect, text) {
-
     // Fill modal inputs with existing values
-    document.getElementById('g-label').value = group.data.rectLabel;
-    document.getElementById('g-color').value = group.data.rectColor;
+    gLabelInput.value = group.data.rectLabel;
+    gColorInput.value = group.data.rectColor;
 
     // Show the modal
-    document.getElementById('group-modal').style.display = 'block';
+    groupModal.style.display = MODAL_DISPLAY_BLOCK;
 
     // Update save button to update instead of adding new
-    document.getElementById('save-group').onclick = function () {
+    saveGroupBtn.onclick = function () {
         // Update properties with new values
-        group.data.rectLabel = document.getElementById('g-label').value;
-        text.attr('text', document.getElementById('g-label').value);
-        group.data.rectColor = document.getElementById('g-color').value;
-        rect.attr('fill', document.getElementById('g-color').value);
+        group.data.rectLabel = gLabelInput.value;
+        text.attr('text', gLabelInput.value);
+        group.data.rectColor = gColorInput.value;
+        rect.attr('fill', gColorInput.value);
 
         // Close modal after update
-        document.getElementById('group-modal').style.display = 'none';
+        groupModal.style.display = MODAL_DISPLAY_NONE;
     };
 }
 
 // Function to create connection dots for a rectangle
 function createConnectionDots(rect, paper, group) {
-    const dotRadius = 4;
     const dotAttrs = {
         fill: "#00f",
         cursor: "pointer",
@@ -208,16 +155,16 @@ function createConnectionDots(rect, paper, group) {
 
     const ra = rect.attrs;
     const dots = [
-        paper.circle(ra.x + ra.width / 2, ra.y, dotRadius).attr(dotAttrs),
-        paper.circle(ra.x + ra.width, ra.y + ra.height / 2, dotRadius).attr(dotAttrs),
-        paper.circle(ra.x + ra.width / 2, ra.y + ra.height, dotRadius).attr(dotAttrs),
-        paper.circle(ra.x, ra.y + ra.height / 2, dotRadius).attr(dotAttrs)
+        paper.circle(ra.x + ra.width / 2, ra.y, DOT_RADIUS).attr(dotAttrs),
+        paper.circle(ra.x + ra.width, ra.y + ra.height / 2, DOT_RADIUS).attr(dotAttrs),
+        paper.circle(ra.x + ra.width / 2, ra.y + ra.height, DOT_RADIUS).attr(dotAttrs),
+        paper.circle(ra.x, ra.y + ra.height / 2, DOT_RADIUS).attr(dotAttrs)
     ];
 
     dots.forEach(dot => {
         dot.hover(
-            () => dot.attr({ r: 6 }),
-            () => dot.attr({ r: 4 })
+            () => dot.attr({ r: DOT_HOVER_RADIUS }),
+            () => dot.attr({ r: DOT_RADIUS })
         );
 
         dot.node.addEventListener('mousedown', event => event.stopPropagation());
@@ -231,35 +178,35 @@ function createConnectionDots(rect, paper, group) {
 
 // Function to update connection dots positions in a group
 function updateConnectionDots(group) {
-    for (let i = 0; i < group.length; i++) {
-        if (group[i].type === 'circle') {
-            const dotX = group[i].attrs.cx;
-            const dotY = group[i].attrs.cy;
-            var cnnOut = connections.find(c => c.from === group[i]);
+    group.forEach(item => {
+        if (item.type === 'circle') {
+            const dotX = item.attrs.cx;
+            const dotY = item.attrs.cy;
+            const cnnOut = connections.find(c => c.from === item);
             if (cnnOut) {
                 const endX = cnnOut.line.attrs.path[1][1];
                 const endY = cnnOut.line.attrs.path[1][2];
-                cnnOut.line.attr({ path: `M${dotX},${dotY}L${endX},${endY}` })
+                cnnOut.line.attr({ path: `M${dotX},${dotY}L${endX},${endY}` });
             }
-            var cnnIns = connections.filter(c => c.to === group[i]);
+            const cnnIns = connections.filter(c => c.to === item);
             cnnIns.forEach(cnnIn => {
                 const startX = cnnIn.line.attrs.path[0][1];
                 const startY = cnnIn.line.attrs.path[0][2];
-                cnnIn.line.attr({ path: `M${startX},${startY}L${dotX},${dotY}` })
+                cnnIn.line.attr({ path: `M${startX},${startY}L${dotX},${dotY}` });
             });
         }
-    }
+    });
 }
 
 // Function called when a connection dot starts dragging
 function onDotStart() {
     this.data("start", { x: this.attrs.cx, y: this.attrs.cy });
-    for (let i = 0; i < connections.length; i++) {
-        if (connections[i].from === this) {
-            connections[i].line.remove();
+    connections.forEach((conn, i) => {
+        if (conn.from === this) {
+            conn.line.remove();
             connections.splice(i, 1);
         }
-    }
+    });
 }
 
 // Function called when a connection dot is being dragged
@@ -302,18 +249,9 @@ function onDotEnd() {
                 }
             });
 
-            //connections.push({ from: this, to: dot2, line: line });
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('property-modal').style.display = 'block';
-
             // Save the connection temporarily to add properties later
             const tempConnection = { from: this, to: dot2, line: line };
-            document.getElementById('save-properties').onclick = function () {
-                saveProperties(tempConnection);
-            };
-            document.getElementById('cancel-properties').onclick = function () {
-                cancelProperties(tempConnection);
-            };
+            showPropertyModal(tempConnection);
         } else {
             line.remove();
         }
@@ -326,28 +264,28 @@ function editConnection(connection) {
     const { prop1, prop2, prop3 } = connection.data || {};
 
     // Fill the modal inputs with the current properties
-    document.getElementById('prop1').value = prop1 || '';
-    document.getElementById('prop2').value = prop2 || '';
-    document.getElementById('prop3').value = prop3 || '';
+    prop1Input.value = prop1 || '';
+    prop2Input.value = prop2 || '';
+    prop3Input.value = prop3 || '';
 
     // Show the overlay and modal
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('property-modal').style.display = 'block';
+    overlay.style.display = MODAL_DISPLAY_BLOCK;
+    propertyModal.style.display = MODAL_DISPLAY_BLOCK;
 
     // Update the save button to save changes to this connection
-    document.getElementById('save-properties').onclick = function () {
+    savePropertiesBtn.onclick = function () {
         saveProperties(connection);
     };
-    document.getElementById('cancel-properties').onclick = function () {
+    cancelPropertiesBtn.onclick = function () {
         cancelProperties();
     };
 }
 
 // Function to save properties and add the connection to the connections array
 function saveProperties(connection) {
-    const prop1 = document.getElementById('prop1').value;
-    const prop2 = document.getElementById('prop2').value;
-    const prop3 = document.getElementById('prop3').value;
+    const prop1 = prop1Input.value;
+    const prop2 = prop2Input.value;
+    const prop3 = prop3Input.value;
 
     // Add properties to the connection
     if (!connection.data) {
@@ -363,13 +301,11 @@ function saveProperties(connection) {
     }
 
     // Hide the overlay and modal
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('property-modal').style.display = 'none';
+    overlay.style.display = MODAL_DISPLAY_NONE;
+    propertyModal.style.display = MODAL_DISPLAY_NONE;
 
     // Clear the input fields
-    document.getElementById('prop1').value = '';
-    document.getElementById('prop2').value = '';
-    document.getElementById('prop3').value = '';
+    clearPropertyInputs();
 }
 
 function cancelProperties(connection) {
@@ -379,13 +315,11 @@ function cancelProperties(connection) {
     }
 
     // Hide the overlay and modal
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('property-modal').style.display = 'none';
+    overlay.style.display = MODAL_DISPLAY_NONE;
+    propertyModal.style.display = MODAL_DISPLAY_NONE;
 
     // Clear the input fields
-    document.getElementById('prop1').value = '';
-    document.getElementById('prop2').value = '';
-    document.getElementById('prop3').value = '';
+    clearPropertyInputs();
 }
 
 // Function to get the connection dot at a specific position
@@ -397,7 +331,7 @@ function getDotAt(x, y, group) {
                 const el = rectGroup[j];
                 if (el.type === 'circle') {
                     const distance = Math.sqrt(Math.pow(x - el.attrs.cx, 2) + Math.pow(y - el.attrs.cy, 2));
-                    if (distance <= 6) {
+                    if (distance <= DOT_HOVER_RADIUS) {
                         return el; // Return the circle element directly
                     }
                 }
@@ -405,4 +339,96 @@ function getDotAt(x, y, group) {
         }
     }
     return null; // Return null if no matching circle is found
+}
+
+// Helper function to create an icon
+function createIcon(paper, x, y, iconText, group, clickHandler) {
+    const icon = paper.text(x, y, iconText).attr({
+        "font-family": "\"Font Awesome 5 Free\"",
+        "font-weight": "900",
+        "font-size": 18,
+        fill: "#000",
+        cursor: "pointer",
+        opacity: 0 // Hidden initially
+    }).data("group", group).data("type", "icon");
+
+    icon.node.addEventListener('click', () => clickHandler(icon.data("group")));
+
+    return icon;
+}
+
+// Helper function to enable dragging for a group
+function enableDragging(group, rect, text) {
+    let pdx, pdy;
+
+    const startDrag = function () {
+        pdx = 0;
+        pdy = 0;
+        group.attr({ opacity: 0.5 }).toFront(); // Set opacity and bring to front
+    };
+
+    const moveDrag = function (dx, dy) {
+        const newDx = dx - pdx;
+        const newDy = dy - pdy;
+
+        group.forEach(el => {
+            switch (el.type) {
+                case "circle":
+                    el.attr({ cx: el.attrs.cx + newDx, cy: el.attrs.cy + newDy });
+                    break;
+                case "rect":
+                case "image":
+                case "text":
+                    el.attr({ x: el.attrs.x + newDx, y: el.attrs.y + newDy });
+                    break;
+            }
+        });
+
+        pdx = dx;
+        pdy = dy;
+
+        // Update connection dots positions
+        updateConnectionDots(group);
+    };
+
+    const endDrag = function () {
+        group.attr({ opacity: 1 }); // Restore opacity
+    };
+
+    rect.drag(moveDrag, startDrag, endDrag);
+    text.drag(moveDrag, startDrag, endDrag);
+}
+
+// Helper function to add hover effects to a group
+function addHoverEffects(group) {
+    group.hover(
+        () => group.forEach(item => {
+            if (item.type === "circle") item.attr({ opacity: 1 });
+            if (item.type === "text" && item.data("type") === "icon") item.attr({ opacity: 1 });
+        }),
+        () => group.forEach(item => {
+            if (item.type === "circle") item.attr({ opacity: 0 });
+            if (item.type === "text" && item.data("type") === "icon") item.attr({ opacity: 0 });
+        })
+    );
+}
+
+// Helper function to show the property modal
+function showPropertyModal(tempConnection) {
+    overlay.style.display = MODAL_DISPLAY_BLOCK;
+    propertyModal.style.display = MODAL_DISPLAY_BLOCK;
+
+    savePropertiesBtn.onclick = function () {
+        saveProperties(tempConnection);
+    };
+    cancelPropertiesBtn.onclick = function () {
+        cancelProperties(tempConnection);
+    };
+}
+
+// Helper function to clear property input fields
+function clearPropertyInputs() {
+    prop1Input.value = '';
+    prop2Input.value = '';
+    prop3Input.value = '';
 }

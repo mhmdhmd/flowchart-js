@@ -1,0 +1,12 @@
+﻿export const groupModal = document.getElementById('group-modal');
+export const saveGroupBtn = document.getElementById('save-group');
+export const cancelGroupBtn = document.getElementById('cancel-group');
+export const gLabelInput = document.getElementById('g-label');
+export const gColorInput = document.getElementById('g-color');
+export const overlay = document.getElementById('overlay');
+export const propertyModal = document.getElementById('property-modal');
+export const savePropertiesBtn = document.getElementById('save-properties');
+export const cancelPropertiesBtn = document.getElementById('cancel-properties');
+export const prop1Input = document.getElementById('prop1');
+export const prop2Input = document.getElementById('prop2');
+export const prop3Input = document.getElementById('prop3');

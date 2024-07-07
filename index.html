@@ -8,53 +8,52 @@
     <script src="js/raphael.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <script src="js/main.js"></script>
+    <script type="module" src="js/main.js"></script>
 </head>
 
 <body>
-    
-    <div id="toolbox">
-        <h2>Toolbox</h2>
-        <button class="m-b-5 parrent-box" id="add-rectangle-button">Add Rectangle</button>
-    </div>
-    <div id="canvas-container">
-        <div id="canvas"></div>
-    </div>
 
-    <div id="overlay" style="display: none;"></div>
+<div id="toolbox">
+    <h2>Toolbox</h2>
+    <button class="m-b-5 parent-box" id="add-rectangle-button">Add Rectangle</button>
+</div>
+<div id="canvas-container">
+    <div id="canvas"></div>
+</div>
 
-    <!-- Modal Structure -->
-    <div id="property-modal" style="display: none;">
-        <div>
-            <label for="prop1">Prop1:</label>
-            <input class="m-b-5" type="text" id="prop1">
-        </div>
-        <div>
-            <label for="prop2">Prop2:</label>
-            <input class="m-b-5" type="text" id="prop2">
-        </div>
-        <div>
-            <label for="prop3">Prop3:</label>
-            <input class="m-b-5" type="text" id="prop3">
-        </div>
-        <button id="save-properties">Save</button>
-        <button id="cancel-properties">Cancel</button>
-    </div>
+<div id="overlay" style="display: none;"></div>
 
-    <div id="group-modal" class="modal">
-        <div class="modal-content">
-            <div>
-                <label for="g-label">Label:</label>
-                <input class="m-b-5" type="text" id="g-label" value="label1">
-            </div>
-            <div>
-                <label for="g-color">Color:</label>
-                <input class="m-b-5" type="text" id="g-color" value="#f73">
-            </div><br><br>
-            <button id="save-group">Save</button>
-            <button id="cancel-group">Cancel</button>
-        </div>
+<div id="property-modal" style="display: none;">
+    <div>
+        <label for="prop1">Prop1:</label>
+        <input class="m-b-5" type="text" id="prop1">
     </div>
+    <div>
+        <label for="prop2">Prop2:</label>
+        <input class="m-b-5" type="text" id="prop2">
+    </div>
+    <div>
+        <label for="prop3">Prop3:</label>
+        <input class="m-b-5" type="text" id="prop3">
+    </div>
+    <button id="save-properties">Save</button>
+    <button id="cancel-properties">Cancel</button>
+</div>
+
+<div id="group-modal" class="modal">
+    <div class="modal-content">
+        <div>
+            <label for="g-label">Label:</label>
+            <input class="m-b-5" type="text" id="g-label" value="label1">
+        </div>
+        <div>
+            <label for="g-color">Color:</label>
+            <input class="m-b-5" type="text" id="g-color" value="#f73">
+        </div><br><br>
+        <button id="save-group">Save</button>
+        <button id="cancel-group">Cancel</button>
+    </div>
+</div>
 </body>
 
 </html>
