@@ -6,18 +6,13 @@ function addRectangle(paper) {
     const x = randomNumber();
     const y = randomNumber();
 
-    // const groupRect = createDraggableRectWithText(x, y, rectWidth, rectHeight, rectLabel, rectColor, paper);
-    // rectangles.push(groupRect);
-
     // Display the group modal
     document.getElementById('group-modal').style.display = 'block';
 
     // Handle save action
     document.getElementById('save-group').onclick = function () {
         const rectLabel = document.getElementById('g-label').value;
-        // const rectHeight = parseInt(document.getElementById('g-height').value);
         const rectHeight = 80;
-        // const rectWidth = parseInt(document.getElementById('g-width').value);
         const rectWidth = 170;
         const rectColor = document.getElementById('g-color').value;
 
@@ -29,8 +24,6 @@ function addRectangle(paper) {
 
         // Clear the input fields
         document.getElementById('g-label').value = '';
-        // document.getElementById('g-height').value = '';
-        // document.getElementById('g-width').value = '';
         document.getElementById('g-color').value = '#';
     };
 
@@ -44,7 +37,6 @@ function addRectangle(paper) {
 // Function to create a draggable rectangle with text and connection dots
 function createDraggableRectWithText(x, y, width, height, labelText, color, paper, data) {
     const group = paper.set();
-    //group.data("data", data);
     group.data = data;
 
     // Create rectangle
@@ -187,8 +179,6 @@ function openEditModal(group, rect, text) {
 
     // Fill modal inputs with existing values
     document.getElementById('g-label').value = group.data.rectLabel;
-    // document.getElementById('g-height').value = group.data.rectHeight;
-    // document.getElementById('g-width').value = group.data.rectWidth;
     document.getElementById('g-color').value = group.data.rectColor;
 
     // Show the modal
