@@ -16,6 +16,7 @@
 <div id="toolbox">
     <h2>Toolbox</h2>
     <button class="m-b-5 parent-box" id="add-rectangle-button">Add Rectangle</button>
+    <button class="m-b-5 parent-box" id="save-button">Save</button>
 </div>
 <div id="canvas-container">
     <div id="canvas"></div>
@@ -25,16 +26,12 @@
 
 <div id="property-modal" style="display: none;">
     <div>
-        <label for="prop1">Prop1:</label>
-        <input class="m-b-5" type="text" id="prop1">
+        <label for="minDelay">MinDelay:</label>
+        <input class="m-b-5" type="text" id="minDelay">
     </div>
     <div>
-        <label for="prop2">Prop2:</label>
-        <input class="m-b-5" type="text" id="prop2">
-    </div>
-    <div>
-        <label for="prop3">Prop3:</label>
-        <input class="m-b-5" type="text" id="prop3">
+        <label for="maxDelay">MaxDelay:</label>
+        <input class="m-b-5" type="text" id="maxDelay">
     </div>
     <button id="save-properties">Save</button>
     <button id="cancel-properties">Cancel</button>
@@ -43,13 +40,21 @@
 <div id="group-modal" class="modal">
     <div class="modal-content">
         <div>
-            <label for="g-label">Label:</label>
-            <input class="m-b-5" type="text" id="g-label" value="label1">
+            <label for="g-operationRef">OperationRef:</label>
+            <input class="m-b-5" type="text" id="g-operationRef" value="4">
         </div>
         <div>
-            <label for="g-color">Color:</label>
-            <input class="m-b-5" type="text" id="g-color" value="#f73">
-        </div><br><br>
+            <label for="g-operationTitle">OperationTitle:</label>
+            <input class="m-b-5" type="text" id="g-operationTitle" value="op1">
+        </div>
+        <div>
+            <label for="g-isInitial">IsInitial:</label>
+            <input class="m-b-5" type="checkbox" id="g-isInitial" value="false">
+        </div>
+        <div>
+            <label for="g-isFinal">IsFinal:</label>
+            <input class="m-b-5" type="checkbox" id="g-isFinal" value="false">
+        </div>
         <button id="save-group">Save</button>
         <button id="cancel-group">Cancel</button>
     </div>

@@ -1,16 +1,15 @@
 ﻿// helpers.js
 import { connections } from './connections.js';
 import { updateConnectionDots } from './connections.js';
-import { prop1Input, prop2Input, prop3Input } from './domElements.js';
+import { minDelayInput, maxDelayInput } from './domElements.js';
 
 export function randomNumber() {
     return Math.floor(Math.random() * 500) + 100;
 }
 
 export function clearPropertyInputs() {
-    prop1Input.value = '';
-    prop2Input.value = '';
-    prop3Input.value = '';
+    minDelayInput.value = '';
+    maxDelayInput.value = '';
 }
 
 // Helper function to create an icon
@@ -83,4 +82,8 @@ export function addHoverEffects(group) {
             if (item.type === "text" && item.data("type") === "icon") item.attr({ opacity: 0 });
         })
     );
+}
+
+export function guid() {
+    return ("0000" + (Math.random()*Math.pow(36,5) << 0).toString(36)).slice(-5);
 }

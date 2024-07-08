@@ -1,6 +1,6 @@
 ﻿// connections.js
 import { DOT_RADIUS, DOT_HOVER_RADIUS, MODAL_DISPLAY_BLOCK, MODAL_DISPLAY_NONE } from './constants.js';
-import { overlay, propertyModal, savePropertiesBtn, cancelPropertiesBtn, prop1Input, prop2Input, prop3Input } from './domElements.js';
+import { overlay, propertyModal, savePropertiesBtn, cancelPropertiesBtn, minDelayInput, maxDelayInput } from './domElements.js';
 import { clearPropertyInputs } from './helpers.js';
 import { showPropertyModal } from './modals.js';
 import { rectangles } from './rectangles.js';
@@ -16,10 +16,10 @@ export function createConnectionDots(rect, paper, group) {
 
     const ra = rect.attrs;
     const dots = [
-        paper.circle(ra.x + ra.width / 2, ra.y, DOT_RADIUS).attr(dotAttrs),
-        paper.circle(ra.x + ra.width, ra.y + ra.height / 2, DOT_RADIUS).attr(dotAttrs),
-        paper.circle(ra.x + ra.width / 2, ra.y + ra.height, DOT_RADIUS).attr(dotAttrs),
-        paper.circle(ra.x, ra.y + ra.height / 2, DOT_RADIUS).attr(dotAttrs)
+        paper.circle(ra.x + ra.width / 2, ra.y, DOT_RADIUS).attr(dotAttrs).data('loc', 'tt'),
+        paper.circle(ra.x + ra.width, ra.y + ra.height / 2, DOT_RADIUS).attr(dotAttrs).data('loc', 'rr'),
+        paper.circle(ra.x + ra.width / 2, ra.y + ra.height, DOT_RADIUS).attr(dotAttrs).data('loc', 'bb'),
+        paper.circle(ra.x, ra.y + ra.height / 2, DOT_RADIUS).attr(dotAttrs).data('loc', 'll')
     ];
 
     dots.forEach(dot => {
@@ -115,11 +115,10 @@ function onDotEnd() {
 }
 
 export function editConnection(connection) {
-    const { prop1, prop2, prop3 } = connection.data || {};
+    const { minDelay, maxDelay } = connection.data || {};
 
-    prop1Input.value = prop1 || '';
-    prop2Input.value = prop2 || '';
-    prop3Input.value = prop3 || '';
+    minDelayInput.value = minDelay || '';
+    maxDelayInput.value = maxDelay || '';
 
     overlay.style.display = MODAL_DISPLAY_BLOCK;
     propertyModal.style.display = MODAL_DISPLAY_BLOCK;
@@ -133,16 +132,14 @@ export function editConnection(connection) {
 }
 
 export function saveProperties(connection) {
-    const prop1 = prop1Input.value;
-    const prop2 = prop2Input.value;
-    const prop3 = prop3Input.value;
+    const minDelay = minDelayInput.value;
+    const maxDelay = maxDelayInput.value;
 
     if (!connection.data) {
         connection.data = {};
     }
-    connection.data.prop1 = prop1;
-    connection.data.prop2 = prop2;
-    connection.data.prop3 = prop3;
+    connection.data.minDelay = minDelay;
+    connection.data.maxDelay = maxDelay;
 
     if (!connections.includes(connection)) {
         connections.push(connection);

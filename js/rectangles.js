@@ -1,7 +1,13 @@
 ﻿// rectangles.js
 import { RECT_HEIGHT, RECT_WIDTH, MODAL_DISPLAY_BLOCK, MODAL_DISPLAY_NONE } from './constants.js';
-import { groupModal, saveGroupBtn, cancelGroupBtn, gLabelInput, gColorInput } from './domElements.js';
-import { randomNumber, createIcon, enableDragging, addHoverEffects } from './helpers.js';
+import {
+    groupModal,
+    saveGroupBtn,
+    cancelGroupBtn,
+    gOperationRef,
+    gOperationTitle, gIsInitial, gIsFinal
+} from './domElements.js';
+import {randomNumber, createIcon, enableDragging, addHoverEffects, guid} from './helpers.js';
 import { createConnectionDots, updateConnectionDots, connections } from './connections.js';
 import { openEditModal } from './modals.js';
 
@@ -14,16 +20,23 @@ export function addRectangle(paper) {
     groupModal.style.display = MODAL_DISPLAY_BLOCK;
 
     saveGroupBtn.onclick = function () {
-        const rectLabel = gLabelInput.value;
-        const rectColor = gColorInput.value;
+        // const rectLabel = gLabelInput.value;
+        // const rectColor = gColorInput.value;
+        const operationRef = parseInt(gOperationRef.value);
+        const operationTitle = gOperationTitle.value;
+        const isInitial = gIsInitial.checked;
+        const isFinal = gIsFinal.checked;
 
-        const groupRect = createDraggableRectWithText(x, y, RECT_WIDTH, RECT_HEIGHT, rectLabel, rectColor, paper, { rectLabel, rectHeight: RECT_HEIGHT, rectWidth: RECT_WIDTH, rectColor });
+        const uniqueId = guid();
+        const groupRect = createDraggableRectWithText(x, y, RECT_WIDTH, RECT_HEIGHT, operationTitle, "#fbf", paper, { operationRef, operationTitle, isInitial, isFinal, uniqueId });
         rectangles.push(groupRect);
+        
+        console.log(rectangles);
 
         groupModal.style.display = MODAL_DISPLAY_NONE;
 
-        gLabelInput.value = '';
-        gColorInput.value = '#';
+        // gLabelInput.value = '';
+        // gColorInput.value = '#';
     };
 
     cancelGroupBtn.onclick = function () {
@@ -34,6 +47,7 @@ export function addRectangle(paper) {
 export function createDraggableRectWithText(x, y, width, height, labelText, color, paper, data) {
     const group = paper.set();
     group.data = data;
+    
 
     const rect = paper.rect(x, y, width, height, 5).attr({
         fill: color,
@@ -41,7 +55,7 @@ export function createDraggableRectWithText(x, y, width, height, labelText, colo
         "stroke-width": 2,
         cursor: "move"
     });
-
+    
     const text = paper.text(x + width / 2, y + height / 2, labelText).attr({
         "font-size": 20,
         "font-family": "Arial, sans-serif",
@@ -59,6 +73,8 @@ export function createDraggableRectWithText(x, y, width, height, labelText, colo
 
     enableDragging(group, rect, text);
     addHoverEffects(group);
+    
+    console.log(rect);
 
     return group;
 }
