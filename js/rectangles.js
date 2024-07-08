@@ -28,7 +28,7 @@ export function addRectangle(paper) {
         const isFinal = gIsFinal.checked;
 
         const uniqueId = guid();
-        const groupRect = createDraggableRectWithText(x, y, RECT_WIDTH, RECT_HEIGHT, operationTitle, "#fbf", paper, { operationRef, operationTitle, isInitial, isFinal, uniqueId });
+        const groupRect = createDraggableRectWithText(x, y, RECT_WIDTH, RECT_HEIGHT, operationTitle, "#fbf", paper, { locationX: x, locationY: y, operationRef, operationTitle, isInitial, isFinal, uniqueId });
         rectangles.push(groupRect);
         
         console.log(rectangles);

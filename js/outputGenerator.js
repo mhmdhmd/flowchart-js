@@ -5,7 +5,14 @@ export function generateOutputObject() {
     let output = {nodes:[], steps:[]};
     
     groups.forEach(group => {
-        output.nodes.push({uniqueId: group.data.uniqueId, operationRef : group.data.operationRef, isInitial: group.data.isInitial, isFinal: group.data.isFinal});    
+        output.nodes.push(
+            {uniqueId: group.data.uniqueId,
+                operationRef : group.data.operationRef,
+                isInitial: group.data.isInitial,
+                isFinal: group.data.isFinal,
+                locationX: group.data.locationX,
+                locationY: group.data.locationY
+            });    
     });
     
     connections.forEach(connection => {
